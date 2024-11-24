@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -14,20 +14,20 @@ import (
 )
 
 var (
-	// TODO: Mutex it so multiple requests are processed acccordingly
 	receiptData = make(map[uuid.UUID]types.Receipt)
+	mutex       sync.Mutex
 )
 
 func main() {
 	muxHandler := mux.NewRouter()
 
 	muxHandler.HandleFunc("/receipts/process", processReceiptsHandler).Methods("POST")
-	muxHandler.HandleFunc("/receipts/{id}/points/", getPointsHandler).Methods("GET")
+	muxHandler.HandleFunc("/receipts/{id}/points", getPointsHandler).Methods("GET")
 
 	log.Println("!!!!! Starting Receipt-Processor !!!!!")
 
 	log.Println("Server is listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", muxHandler))
 
 }
 
@@ -41,7 +41,9 @@ func processReceiptsHandler(response http.ResponseWriter, request *http.Request)
 	}
 
 	id := uuid.New()
+	mutex.Lock()
 	receiptData[id] = receipt
+	mutex.Unlock()
 
 	jsonResponse := map[string]string{"receiptID": id.String()}
 	response.Header().Set("Content-Type", "application/json")
@@ -58,7 +60,9 @@ func getPointsHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	mutex.Lock()
 	receipt, exists := receiptData[uuid]
+	mutex.Unlock()
 
 	if !exists {
 		http.Error(response, "No receipt found for that id", http.StatusNotFound)
@@ -66,6 +70,7 @@ func getPointsHandler(response http.ResponseWriter, request *http.Request) {
 	}
 
 	points := points.Calculate(receipt)
+	jsonResponse := map[string]int{"points": points}
 	response.Header().Set("Content-Type", "application/json")
-	response.Write([]byte(`{"points":` + strconv.Itoa(points) + `}`))
+	json.NewEncoder(response).Encode(jsonResponse)
 }
