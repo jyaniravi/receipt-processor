@@ -4,22 +4,25 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 
+	"receipt-processor/points"
 	"receipt-processor/types"
 )
 
-// "receipt-processor/points"
-
 var (
 	// TODO: Mutex it so multiple requests are processed acccordingly
-	receiptData = make(map[string]types.Receipt)
+	receiptData = make(map[uuid.UUID]types.Receipt)
 )
 
 func main() {
-	http.HandleFunc("/receipts/process", processReceiptsHandler)
-	// http.HandleFunc("/receipts/", getPointsHandler)
+	muxHandler := mux.NewRouter()
+
+	muxHandler.HandleFunc("/receipts/process", processReceiptsHandler).Methods("POST")
+	muxHandler.HandleFunc("/receipts/{id}/points/", getPointsHandler).Methods("GET")
 
 	log.Println("!!!!! Starting Receipt-Processor !!!!!")
 
@@ -29,25 +32,40 @@ func main() {
 }
 
 func processReceiptsHandler(response http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		http.Error(response, "Request is not of POST method", http.StatusMethodNotAllowed)
-		return
-	}
 
 	var receipt types.Receipt
+
 	err := json.NewDecoder(request.Body).Decode(&receipt)
 	if err != nil {
 		http.Error(response, "Invalid receipt posted", http.StatusBadRequest)
 	}
 
-	id := uuid.New().String()
+	id := uuid.New()
 	receiptData[id] = receipt
 
-	jsonResponse := map[string]string{"receiptID": id}
+	jsonResponse := map[string]string{"receiptID": id.String()}
 	response.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(response).Encode(jsonResponse)
 }
 
-// func getPointsHandler(request *http.Request, response http.ResponseWriter) {
+func getPointsHandler(response http.ResponseWriter, request *http.Request) {
+	variables := mux.Vars(request)
+	id := variables["id"]
 
-// }
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		http.Error(response, "No receipt found for that id", http.StatusNotFound)
+		return
+	}
+
+	receipt, exists := receiptData[uuid]
+
+	if !exists {
+		http.Error(response, "No receipt found for that id", http.StatusNotFound)
+		return
+	}
+
+	points := points.Calculate(receipt)
+	response.Header().Set("Content-Type", "application/json")
+	response.Write([]byte(`{"points":` + strconv.Itoa(points) + `}`))
+}
