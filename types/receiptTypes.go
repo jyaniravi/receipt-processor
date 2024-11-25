@@ -14,7 +14,7 @@ type Item struct {
 }
 
 type ReceiptProcessResponse struct {
-	ReceiptID string `json:"receiptID"`
+	ReceiptID string `json:"id"`
 }
 
 type GetPointsResponse struct {

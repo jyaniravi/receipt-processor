@@ -81,7 +81,7 @@ docker run -p 8080:8080 receipt-processor
     - Response Example:
     ```JSON
     {
-        "receiptID": "7fb1377b-b223-49d9-a31a-5a02701dd310"
+        "id": "7fb1377b-b223-49d9-a31a-5a02701dd310"
     }
     ```
 2. 

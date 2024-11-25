@@ -27,7 +27,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  receiptID:
+                  id:
                     type: string
                     description: The unique identifier for the processed receipt
                 example:
