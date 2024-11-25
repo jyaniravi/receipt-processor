@@ -9,17 +9,24 @@ import (
 
 func ValidateReceipt(receipt types.Receipt) error {
 	// Validate total amount
-	_, err := strconv.ParseFloat(receipt.Total, 64)
+	total, err := strconv.ParseFloat(receipt.Total, 64)
 	if err != nil {
 		return fmt.Errorf("total amount is invalid: %w", err)
+	}
+	if total < 0 {
+		return fmt.Errorf("total amount cannot be negative")
 	}
 
 	// Validate each item's price
 	for _, item := range receipt.Items {
-		_, err := strconv.ParseFloat(item.Price, 64)
+		price, err := strconv.ParseFloat(item.Price, 64)
 		if err != nil {
 			return fmt.Errorf("invalid price for item '%s': %w", item.Name, err)
 		}
+		if price < 0 {
+			return fmt.Errorf("item price cannot be negative:'%s'", item.Name)
+		}
+
 	}
 
 	// Validate purchase date format

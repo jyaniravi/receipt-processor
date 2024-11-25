@@ -9,12 +9,21 @@ import (
 	"time"
 )
 
+const (
+	WholeDollarPoints  = 50
+	MultipleOf25Points = 25
+	OddDatePoints      = 6
+	PurchaseTimePoints = 10
+)
+
+// Calculate computes the total reward points based on receipt data.
+// It aggregates points from different criteria like total amount, item descriptions, and timestamps.
 func Calculate(receipt types.Receipt) float64 {
 	totalPoints := 0
 
 	totalAmount, err := strconv.ParseFloat(receipt.Total, 64)
 	if err != nil {
-		return 0
+		totalAmount = 0
 	}
 
 	totalPoints += getWholeDollarTotalPoints(totalAmount)
@@ -36,7 +45,7 @@ func Calculate(receipt types.Receipt) float64 {
 
 func getWholeDollarTotalPoints(totalAmount float64) int {
 	if totalAmount == float64(int(totalAmount)) {
-		return 50
+		return WholeDollarPoints
 	}
 
 	return 0
@@ -50,7 +59,7 @@ func getAlphanumericRetailerPoints(retailer string) int {
 
 func getMultipleOf25Points(totalAmount float64) int {
 	if math.Mod(totalAmount, 0.25) == 0 {
-		return 25
+		return MultipleOf25Points
 	}
 
 	return 0
@@ -77,26 +86,20 @@ func countItemDescriiptionLengthPoints(itemsList []types.Item) int {
 }
 
 func getOddDatePoints(purchaseDate string) int {
-	date, err := time.Parse("2006-01-02", purchaseDate)
-	if err != nil {
-		return 0
-	}
+	date, _ := time.Parse("2006-01-02", purchaseDate)
 
 	if date.Day()%2 != 0 {
-		return 6
+		return OddDatePoints
 	}
 
 	return 0
 }
 
 func getPurchaseTimePoints(purchaseTime string) int {
-	timePurchased, err := time.Parse("15:04", purchaseTime)
-	if err != nil {
-		return 0
-	}
+	timePurchased, _ := time.Parse("15:04", purchaseTime)
 
 	if timePurchased.Hour() >= 14 && timePurchased.Hour() <= 16 {
-		return 10
+		return PurchaseTimePoints
 	}
 
 	return 0
