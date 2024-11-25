@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func Calculate(receipt types.Receipt) int {
+func Calculate(receipt types.Receipt) float64 {
 	totalPoints := 0
 
 	totalAmount, err := strconv.ParseFloat(receipt.Total, 64)
@@ -31,7 +31,7 @@ func Calculate(receipt types.Receipt) int {
 
 	totalPoints += getPurchaseTimePoints(receipt.PurchaseTime)
 
-	return totalPoints
+	return float64(totalPoints)
 }
 
 func getWholeDollarTotalPoints(totalAmount float64) int {

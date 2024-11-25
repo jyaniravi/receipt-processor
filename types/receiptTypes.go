@@ -13,9 +13,10 @@ type Item struct {
 	Price string `json:"price"`
 }
 
-// TODO:
-// type
-// {"receiptID": id.String()}
+type ReceiptProcessResponse struct {
+	ReceiptID string `json:"receiptID"`
+}
 
-// type
-// int{"points": points}
+type GetPointsResponse struct {
+	Points float64 `json:"points"`
+}

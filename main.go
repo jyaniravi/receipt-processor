@@ -25,8 +25,8 @@ func main() {
 	muxHandler.HandleFunc("/receipts/process", processReceiptsHandler).Methods("POST")
 	muxHandler.HandleFunc("/receipts/{id}/points", getPointsHandler).Methods("GET")
 
+	// Initializing the Server
 	log.Println("!!!!! Starting Receipt-Processor !!!!!")
-
 	log.Println("Server is listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", muxHandler))
 
@@ -35,6 +35,7 @@ func main() {
 func processReceiptsHandler(response http.ResponseWriter, request *http.Request) {
 	var receipt types.Receipt
 
+	// Validate the receipt
 	err := json.NewDecoder(request.Body).Decode(&receipt)
 	if err != nil {
 		http.Error(response, "The receipt is invalid", http.StatusBadRequest)
@@ -46,14 +47,18 @@ func processReceiptsHandler(response http.ResponseWriter, request *http.Request)
 		return
 	}
 
+	// Generating new uuid
 	id := uuid.New()
 	mutex.Lock()
 	receiptData[id] = receipt
 	mutex.Unlock()
 
-	jsonResponse := map[string]string{"receiptID": id.String()}
+	// Responding to processing request
+	receiptResponse := types.ReceiptProcessResponse{
+		ReceiptID: id.String(),
+	}
 	response.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(response).Encode(jsonResponse)
+	json.NewEncoder(response).Encode(receiptResponse)
 }
 
 func getPointsHandler(response http.ResponseWriter, request *http.Request) {
@@ -66,6 +71,7 @@ func getPointsHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Searching receipt in cache - receiptData
 	mutex.Lock()
 	receipt, exists := receiptData[uuid]
 	mutex.Unlock()
@@ -75,9 +81,13 @@ func getPointsHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Calculate the points for the receipt
 	points := process.Calculate(receipt)
 
-	jsonResponse := map[string]int{"points": points}
+	// Responding to get request
+	getPointsResponse := types.GetPointsResponse{
+		Points: points,
+	}
 	response.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(response).Encode(jsonResponse)
+	json.NewEncoder(response).Encode(getPointsResponse)
 }
