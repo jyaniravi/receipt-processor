@@ -67,7 +67,6 @@ docker run -p 8080:8080 receipt-processor
 	- Description: Processes a receipt and returns a unique receipt ID.
 	- Request Body Example:
     ```JSON
-    POST /receipts/process 
     {
         "retailer": "Target",
         "purchaseDate": "2022-01-01",
