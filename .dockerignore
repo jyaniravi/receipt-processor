@@ -1,0 +1,5 @@
+# Exclude these files and directories
+*.log
+*.tmp
+Dockerfile
+.dockerignore

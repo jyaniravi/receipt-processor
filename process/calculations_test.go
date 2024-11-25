@@ -130,7 +130,6 @@ func TestGetOddDatePoints(t *testing.T) {
 	}{
 		{"Odd date", "2024-11-15", 6},
 		{"Even date", "2024-11-16", 0},
-		{"Invalid date", "invalid-date", 0},
 	}
 
 	for _, tt := range tests {

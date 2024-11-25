@@ -1,0 +1,109 @@
+openapi: 3.0.0
+info:
+  title: Receipt Processor API
+  description: API for processing receipts and calculating points.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /receipts/process:
+    post:
+      summary: Process a receipt
+      description: Accepts a receipt in JSON format and returns a unique receipt ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Receipt'
+      responses:
+        '200':
+          description: Receipt processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receiptID:
+                    type: string
+                    description: The unique identifier for the processed receipt
+                example:
+                  id: "7fb1377b-b223-49d9-a31a-5a02701dd310"
+        '400':
+          description: Invalid receipt data
+
+  /receipts/{id}/points:
+    get:
+      summary: Get points for a receipt
+      description: Retrieves the points associated with a previously processed receipt using its unique receipt ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The unique receipt ID
+      responses:
+        '200':
+          description: Points retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  points:
+                    type: integer
+                    description: The points calculated for the receipt
+                example:
+                  points: 32
+        '404':
+          description: Receipt not found
+
+components:
+  schemas:
+    Receipt:
+      type: object
+      properties:
+        retailer:
+          type: string
+          description: The name of the retailer
+        purchaseDate:
+          type: string
+          format: date
+          description: The date of the purchase in YYYY-MM-DD format
+        purchaseTime:
+          type: string
+          format: time
+          description: The time of the purchase in HH:mm format
+        items:
+          type: array
+          description: List of items in the receipt
+          items:
+            $ref: '#/components/schemas/Item'
+        total:
+          type: number
+          format: string
+          description: The total amount of the receipt
+      example:
+        retailer: "Walgreens"
+        purchaseDate: "2022-01-02"
+        purchaseTime: "08:13"
+        total: "2.65"
+        items:
+          - shortDescription: "Pepsi - 12-oz"
+            price: "1.25"
+          - shortDescription: "Dasani"
+            price: "1.40"
+    Item:
+      type: object
+      properties:
+        shortDescription:
+          type: string
+          description: The description of the item
+        price:
+          type: number
+          format: string
+          description: The price of the item
