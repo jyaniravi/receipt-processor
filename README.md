@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a solution to the Fetch Rewards Receipt Processor Challenge. The goal of this challenge is to create a system that processes receipts and calculates points based on specific rules. The application provides two main APIs: one for processing receipts and another for retrieving the points associated with a receipt.
+This project is a solution to the Fetch Rewards Receipt Processor Challenge. The goal of [receipt-processor-challenge](https://github.com/fetch-rewards/receipt-processor-challenge) challenge is to create a system that processes receipts and calculates points based on specific rules. The application provides two main APIs: one for processing receipts and another for retrieving the points associated with a receipt.
 
 ---
 
