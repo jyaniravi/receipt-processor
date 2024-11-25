@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -9,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
-	"receipt-processor/points"
+	"receipt-processor/process"
 	"receipt-processor/types"
 )
 
@@ -32,12 +33,17 @@ func main() {
 }
 
 func processReceiptsHandler(response http.ResponseWriter, request *http.Request) {
-
 	var receipt types.Receipt
 
 	err := json.NewDecoder(request.Body).Decode(&receipt)
 	if err != nil {
-		http.Error(response, "Invalid receipt posted", http.StatusBadRequest)
+		http.Error(response, "The receipt is invalid", http.StatusBadRequest)
+	}
+
+	err = process.ValidateReceipt(receipt)
+	if err != nil {
+		http.Error(response, fmt.Sprintf("Invalid receipt data: %v", err), http.StatusBadRequest)
+		return
 	}
 
 	id := uuid.New()
@@ -69,7 +75,8 @@ func getPointsHandler(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	points := points.Calculate(receipt)
+	points := process.Calculate(receipt)
+
 	jsonResponse := map[string]int{"points": points}
 	response.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(response).Encode(jsonResponse)

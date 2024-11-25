@@ -1,4 +1,4 @@
-package points
+package process
 
 import (
 	"math"

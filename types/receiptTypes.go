@@ -12,3 +12,10 @@ type Item struct {
 	Name  string `json:"shortDescription"`
 	Price string `json:"price"`
 }
+
+// TODO:
+// type
+// {"receiptID": id.String()}
+
+// type
+// int{"points": points}
